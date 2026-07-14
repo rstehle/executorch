@@ -1797,6 +1797,14 @@ def register_logical_not():
     )
 
 
+@update_features("et_vk::adamw_step")
+def register_adamw_step():
+    return OpFeatures(
+        inputs_storage=utils.CONTIGUOUS_ANY,
+        inputs_dtypes=utils.FP_T,
+    )
+
+
 @update_features(exir_ops.edge.et_vk.linear_q4gsw_dw.default)
 def register_linear_q4gsw_dw():
     return OpFeatures(
