@@ -185,9 +185,16 @@ try {
     Write-Host "::endgroup::"
 
     Write-Host "::group::Build $runnerTarget"
+    $cmakeOut = Join-Path -Path $executorchRoot -ChildPath "cmake-out"
+    $executorchCmakeDir = Join-Path -Path $cmakeOut -ChildPath "lib\cmake\ExecuTorch"
+    $cmakePackageArgs = @(
+        "-DCMAKE_FIND_ROOT_PATH=$cmakeOut",
+        "-DCMAKE_PREFIX_PATH=$cmakeOut;$executorchCmakeDir",
+        "-Dexecutorch_DIR=$executorchCmakeDir"
+    )
     Push-Location (Join-Path -Path $executorchRoot -ChildPath "examples\models\$runnerPath")
     try {
-        cmake --preset $runnerPreset @cmakeCudaArgs
+        cmake --preset $runnerPreset @cmakePackageArgs @cmakeCudaArgs
         cmake --build (Join-Path -Path $executorchRoot -ChildPath "cmake-out\examples\models\$runnerPath") --target $runnerTarget --config Release -j $numCores
     }
     finally {

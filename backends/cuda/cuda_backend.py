@@ -496,12 +496,41 @@ class CudaBackend(AotiBackend, BackendDetails):
         # Parse compile_specs to check for platform
 
         platform = "linux"
+        emulate_precision_casts = "ON"
+        max_autotune = "ON"
+        autotune_at_compile_time = None
         shim_library_path = None
         for spec in compile_specs:
             if spec.key == "platform":
                 platform = spec.value.decode("utf-8")
+            if spec.key == "emulate_precision_casts":
+                emulate_precision_casts = spec.value.decode("utf-8").upper()
+                if emulate_precision_casts not in ["ON", "OFF"]:
+                    raise ValueError(
+                        "Invalid emulate_precision_casts: "
+                        f"{emulate_precision_casts}. Expected 'ON' or 'OFF'."
+                    )
+            if spec.key == "max_autotune":
+                max_autotune = spec.value.decode("utf-8").upper()
+                if max_autotune not in ["ON", "OFF"]:
+                    raise ValueError(
+                        f"Invalid max_autotune: {max_autotune}. Expected 'ON' or 'OFF'."
+                    )
+            if spec.key == "autotune_at_compile_time":
+                autotune_at_compile_time = spec.value.decode("utf-8").upper()
+                if autotune_at_compile_time not in ["ON", "OFF"]:
+                    raise ValueError(
+                        "Invalid autotune_at_compile_time: "
+                        f"{autotune_at_compile_time}. Expected 'ON' or 'OFF'."
+                    )
             if spec.key == "shim_library_path":
                 shim_library_path = spec.value.decode("utf-8")
+        options["emulate_precision_casts"] = emulate_precision_casts == "ON"
+        options["max_autotune"] = max_autotune == "ON"
+        if autotune_at_compile_time is not None:
+            options["triton.autotune_at_compile_time"] = (
+                autotune_at_compile_time == "ON"
+            )
         # Add platform-specific options
 
         if platform == "windows":
